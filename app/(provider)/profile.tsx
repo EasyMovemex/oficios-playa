@@ -1,5 +1,6 @@
 import { View, Text, ScrollView, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar, Rating, Badge, SkeletonCard, EmptyState } from '@/components/ui';
 import { ServicesList } from '@/components/provider/ServicesList';
@@ -9,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Colors } from '@/constants/Colors';
 
 export default function ProviderProfile() {
+  const router = useRouter();
   const { profile } = useAuthStore();
   const { signOut } = useAuth();
   const { data: providerProfile, isLoading, refetch, isRefetching } = useMyProviderProfile();
@@ -20,9 +22,7 @@ export default function ProviderProfile() {
     ]);
   };
 
-  const handleEdit = () => {
-    Alert.alert('Editar perfil', 'La edición de perfil estará disponible próximamente.');
-  };
+  const handleEdit = () => router.push('/(modals)/become-provider');
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }} edges={['top']}>
@@ -99,8 +99,8 @@ export default function ProviderProfile() {
               elevation: 3,
             }}>
               <Avatar
-                uri={profile?.avatar_url}
-                name={profile?.full_name ?? 'P'}
+                uri={providerProfile.logo_url ?? profile?.avatar_url}
+                name={providerProfile.business_name ?? profile?.full_name ?? 'P'}
                 size={80}
                 verified={providerProfile.verified}
               />
@@ -112,8 +112,13 @@ export default function ProviderProfile() {
                 marginTop: 12,
                 textAlign: 'center',
               }}>
-                {profile?.full_name}
+                {providerProfile.business_name ?? profile?.full_name}
               </Text>
+              {providerProfile.business_name && (
+                <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 13, color: Colors.textSecondary, marginTop: 2 }}>
+                  {profile?.full_name}
+                </Text>
+              )}
 
               {providerProfile.verified ? (
                 <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 12, color: Colors.accent, marginTop: 2 }}>

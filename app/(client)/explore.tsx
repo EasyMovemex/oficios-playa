@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ProviderCard } from '@/components/provider/ProviderCard';
-import { SkeletonCard, EmptyState, AnimatedListItem } from '@/components/ui';
+import { SkeletonCard, EmptyState } from '@/components/ui';
 import { useProviders } from '@/hooks/useProviders';
 import { useCategories } from '@/hooks/useCategories';
 import { Colors } from '@/constants/Colors';
@@ -21,6 +21,10 @@ export default function Explore() {
   const router = useRouter();
   const { category: initialCategory } = useLocalSearchParams<{ category?: string }>();
   const [selectedSlug, setSelectedSlug] = useState<string | undefined>(initialCategory);
+
+  useEffect(() => {
+    setSelectedSlug(initialCategory);
+  }, [initialCategory]);
   const [searchText, setSearchText] = useState('');
 
   const { data: providers, isLoading, refetch, isRefetching } = useProviders();
@@ -175,13 +179,11 @@ export default function Explore() {
               }
             />
           }
-          renderItem={({ item, index }) => (
-            <AnimatedListItem index={index}>
-              <ProviderCard
+          renderItem={({ item }) => (
+            <ProviderCard
                 provider={item}
                 onPress={() => router.push(`/(modals)/provider/${item.id}`)}
               />
-            </AnimatedListItem>
           )}
         />
       )}

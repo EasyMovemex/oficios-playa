@@ -27,16 +27,26 @@ CREATE TABLE IF NOT EXISTS profiles (
 CREATE TABLE IF NOT EXISTS provider_profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL UNIQUE REFERENCES profiles(id) ON DELETE CASCADE,
+  business_name TEXT,
+  logo_url TEXT,
   bio TEXT,
   years_experience INTEGER DEFAULT 0,
   verified BOOLEAN DEFAULT false,
   rating_avg NUMERIC(3,2) DEFAULT 0,
   total_reviews INTEGER DEFAULT 0,
   coverage_area TEXT DEFAULT 'Playa del Carmen',
+  schedule TEXT,
+  website TEXT,
   portfolio_urls TEXT[],
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Migration: add new columns to existing tables (run once on production)
+-- ALTER TABLE provider_profiles ADD COLUMN IF NOT EXISTS business_name TEXT;
+-- ALTER TABLE provider_profiles ADD COLUMN IF NOT EXISTS logo_url TEXT;
+-- ALTER TABLE provider_profiles ADD COLUMN IF NOT EXISTS schedule TEXT;
+-- ALTER TABLE provider_profiles ADD COLUMN IF NOT EXISTS website TEXT;
 
 -- Servicios del prestador
 CREATE TABLE IF NOT EXISTS provider_services (

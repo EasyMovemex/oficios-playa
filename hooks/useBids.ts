@@ -57,6 +57,46 @@ export function useCreateBid() {
   });
 }
 
+export type MyActiveBid = {
+  id: string;
+  job_request_id: string;
+  price: number;
+  message: string | null;
+  status: BidStatus;
+  created_at: string;
+  job_requests: {
+    id: string;
+    title: string;
+    status: string;
+    service_categories: { name: string; icon: string };
+  };
+};
+
+export function useMyActiveBids(providerId: string | undefined) {
+  return useQuery<MyActiveBid[]>({
+    queryKey: ['my-active-bids', providerId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('job_bids')
+        .select(`
+          id, job_request_id, price, message, status, created_at,
+          job_requests!job_request_id (
+            id, title, status,
+            service_categories!category_id (name, icon)
+          )
+        `)
+        .eq('provider_id', providerId!)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+      return (data ?? []) as unknown as MyActiveBid[];
+    },
+    enabled: !!providerId,
+  });
+}
+
 export function useBids(jobRequestId: string) {
   return useQuery<BidWithProvider[]>({
     queryKey: ['bids', jobRequestId],

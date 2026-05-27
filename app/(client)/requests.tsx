@@ -1,10 +1,10 @@
-import { View, Text, FlatList, RefreshControl } from 'react-native';
+﻿import { View, Text, FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { JobRequestCard } from '@/components/job/JobRequestCard';
-import { SkeletonCard, EmptyState, AnimatedListItem } from '@/components/ui';
+import { SkeletonCard, EmptyState } from '@/components/ui';
 import { useMyJobRequests } from '@/hooks/useJobRequests';
 import { Colors } from '@/constants/Colors';
 
@@ -72,13 +72,11 @@ export default function Requests() {
               }}
             />
           }
-          renderItem={({ item, index }) => (
-            <AnimatedListItem index={index}>
-              <JobRequestCard
+          renderItem={({ item }) => (
+            <JobRequestCard
                 job={item}
                 onPress={() => router.push(`/(modals)/job/${item.id}`)}
               />
-            </AnimatedListItem>
           )}
         />
       )}

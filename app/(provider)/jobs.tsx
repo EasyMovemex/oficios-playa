@@ -1,8 +1,8 @@
-import { View, Text, FlatList, RefreshControl } from 'react-native';
+﻿import { View, Text, FlatList, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { JobRequestCard } from '@/components/job/JobRequestCard';
-import { SkeletonCard, EmptyState, AnimatedListItem } from '@/components/ui';
+import { SkeletonCard, EmptyState } from '@/components/ui';
 import { useMyProviderProfile } from '@/hooks/useProviderProfile';
 import { useOpenJobsForCategories } from '@/hooks/useJobRequests';
 import { Colors } from '@/constants/Colors';
@@ -64,13 +64,11 @@ export default function ProviderJobs() {
               subtitle="No hay solicitudes abiertas en tus categorías por el momento. Revisá más tarde."
             />
           }
-          renderItem={({ item, index }) => (
-            <AnimatedListItem index={index}>
-              <JobRequestCard
+          renderItem={({ item }) => (
+            <JobRequestCard
                 job={item}
                 onPress={() => router.push(`/(modals)/job/${item.id}`)}
               />
-            </AnimatedListItem>
           )}
         />
       )}

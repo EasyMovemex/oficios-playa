@@ -10,7 +10,6 @@ type ProviderCardProps = {
 
 export function ProviderCard({ provider, onPress }: ProviderCardProps) {
   const profile = provider.profiles;
-  const topService = provider.provider_services[0];
   const allCategories = provider.provider_services.slice(0, 2);
   const priceFrom = provider.provider_services
     .map((s) => s.price_from)
@@ -36,8 +35,8 @@ export function ProviderCard({ provider, onPress }: ProviderCardProps) {
       }}
     >
       <Avatar
-        uri={profile.avatar_url}
-        name={profile.full_name}
+        uri={provider.logo_url ?? profile.avatar_url}
+        name={provider.business_name ?? profile.full_name}
         size={56}
         verified={provider.verified}
       />
@@ -45,12 +44,19 @@ export function ProviderCard({ provider, onPress }: ProviderCardProps) {
       <View style={{ flex: 1 }}>
         {/* Name + rating row */}
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Text
-            style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 15, color: Colors.textPrimary, flex: 1 }}
-            numberOfLines={1}
-          >
-            {profile.full_name}
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 15, color: Colors.textPrimary }}
+              numberOfLines={1}
+            >
+              {provider.business_name ?? profile.full_name}
+            </Text>
+            {provider.business_name && (
+              <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: Colors.textSecondary }} numberOfLines={1}>
+                {profile.full_name}
+              </Text>
+            )}
+          </View>
           {provider.total_reviews > 0 && (
             <Rating value={provider.rating_avg} count={provider.total_reviews} />
           )}

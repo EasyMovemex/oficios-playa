@@ -42,19 +42,39 @@ function AuthGate() {
 
     if (data) {
       const p = data as Profile;
-      setProfile(p);
-      setActiveRole(p.role.includes('provider') ? 'provider' : 'client');
+      // FIX: ensure role is always an array before using it
+      const role = Array.isArray(p.role) ? p.role : [];
+      setProfile({ ...p, role });
+      setActiveRole(role.includes('provider') ? 'provider' : 'client');
     }
   };
 
   useEffect(() => {
+    // FIX: validate session against server before trusting the cached token.
+    // If the user was deleted externally, getSession() still returns the stale
+    // cached token — getUser() validates it and catches that case.
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) await loadProfile(session.user.id);
+      if (session?.user) {
+        const { error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          // Stale / invalid session — clear it and send to login
+          await supabase.auth.signOut();
+          setSession(null);
+          return;
+        }
+        await loadProfile(session.user.id);
+      }
       setSession(session ?? null);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        // FIX: INITIAL_SESSION is already handled by getSession() above.
+        // Processing it here as well causes a race condition where the
+        // safety-net fires while the user is on app/index.tsx (not inAuthGroup)
+        // and silently skips routing to the correct home screen.
+        if (event === 'INITIAL_SESSION') return;
+
         if (event === 'SIGNED_OUT') {
           setProfile(null);
           setSession(null);
@@ -87,7 +107,11 @@ function AuthGate() {
 
     const segs = segments as string[];
     const inAuthGroup = segs[0] === '(auth)';
+    const inClientGroup = segs[0] === '(client)';
+    const inProviderGroup = segs[0] === '(provider)';
+    const inModalsGroup = segs[0] === '(modals)';
     const onOnboarding = inAuthGroup && segs[1] === 'onboarding';
+    const onBecomeProvider = inModalsGroup && segs[1] === 'become-provider';
 
     if (!session) {
       if (!inAuthGroup) router.replace('/(auth)/login');
@@ -96,13 +120,19 @@ function AuthGate() {
 
     if (!profile) return;
 
-    if (profile.role.length === 0) {
-      if (!onOnboarding) router.replace('/(auth)/onboarding');
+    const role = Array.isArray(profile.role) ? profile.role : [];
+
+    if (role.length === 0) {
+      if (!onOnboarding && !onBecomeProvider) router.replace('/(auth)/onboarding');
       return;
     }
 
-    if (inAuthGroup) {
-      const dest = profile.role.includes('provider') && !profile.role.includes('client')
+    // FIX: original only checked `inAuthGroup`. That misses the case where the
+    // app opens with a persisted session on app/index.tsx (spinner) — the user
+    // would be stuck forever. Now we route whenever the user is NOT already in
+    // the correct destination (client, provider, or modals).
+    if (!inClientGroup && !inProviderGroup && !inModalsGroup) {
+      const dest = role.includes('provider') && !role.includes('client')
         ? '/(provider)/home'
         : '/(client)/home';
       router.replace(dest);

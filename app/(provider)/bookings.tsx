@@ -1,8 +1,8 @@
-import { View, Text, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
+﻿import { View, Text, FlatList, RefreshControl, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Badge, SkeletonCard, EmptyState, AnimatedListItem } from '@/components/ui';
+import { Badge, SkeletonCard, EmptyState } from '@/components/ui';
 import { useMyProviderBookings } from '@/hooks/useBookings';
 import { useMyProviderProfile } from '@/hooks/useProviderProfile';
 import { Colors } from '@/constants/Colors';
@@ -99,10 +99,8 @@ export default function ProviderBookings() {
               subtitle="Cuando un cliente acepte tu oferta, la reserva aparecerá aquí"
             />
           }
-          renderItem={({ item, index }) => (
-            <AnimatedListItem index={index}>
-              <BookingRow booking={item} onPress={() => router.push(`/(modals)/booking/${item.id}`)} />
-            </AnimatedListItem>
+          renderItem={({ item }) => (
+            <BookingRow booking={item} onPress={() => router.push(`/(modals)/booking/${item.id}`)} />
           )}
         />
       )}

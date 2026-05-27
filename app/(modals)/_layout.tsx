@@ -8,6 +8,8 @@ export default function ModalsLayout() {
       <Stack.Screen name="booking/[id]" options={{ presentation: 'modal', headerShown: false }} />
       <Stack.Screen name="new-request" options={{ presentation: 'modal', headerShown: false }} />
       <Stack.Screen name="new-bid" options={{ presentation: 'modal', headerShown: false }} />
+      <Stack.Screen name="become-provider" options={{ presentation: 'modal', headerShown: false }} />
+      <Stack.Screen name="community" options={{ presentation: 'modal', headerShown: false }} />
     </Stack>
   );
 }

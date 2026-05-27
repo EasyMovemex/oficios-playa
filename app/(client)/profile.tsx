@@ -44,8 +44,15 @@ function MenuRow({ icon, label, onPress, danger }: MenuRowProps) {
 
 export default function ClientProfile() {
   const router = useRouter();
-  const { profile } = useAuthStore();
+  const { profile, setActiveRole } = useAuthStore();
   const { signOut } = useAuth();
+
+  const isProvider = profile?.role.includes('provider') ?? false;
+
+  const handleSwitchToProvider = () => {
+    setActiveRole('provider');
+    router.replace('/(provider)/home');
+  };
 
   const handleSignOut = () => {
     Alert.alert('Cerrar sesión', '¿Estás seguro que querés salir?', [
@@ -122,6 +129,76 @@ export default function ClientProfile() {
             onPress={() => Alert.alert('Notificaciones', 'Disponible próximamente.')}
           />
         </View>
+
+        {isProvider ? (
+          <TouchableOpacity
+            onPress={handleSwitchToProvider}
+            style={{
+              marginHorizontal: 16,
+              marginTop: 16,
+              borderRadius: 16,
+              backgroundColor: Colors.primary,
+              padding: 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 14,
+            }}
+          >
+            <View style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Text style={{ fontSize: 22 }}>🔧</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 15, color: 'white' }}>
+                Cambiar a modo prestador
+              </Text>
+              <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 2 }}>
+                Ver solicitudes y gestionar tus trabajos
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.8)" />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={() => router.push('/(modals)/become-provider')}
+            style={{
+              marginHorizontal: 16,
+              marginTop: 16,
+              borderRadius: 16,
+              backgroundColor: Colors.secondary,
+              padding: 20,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 14,
+            }}
+          >
+            <View style={{
+              width: 44,
+              height: 44,
+              borderRadius: 22,
+              backgroundColor: 'rgba(255,255,255,0.2)',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+              <Text style={{ fontSize: 22 }}>🔨</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontFamily: 'Poppins_600SemiBold', fontSize: 15, color: 'white' }}>
+                Ofrecer mis servicios
+              </Text>
+              <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 2 }}>
+                Registrate como prestador y conseguí clientes
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.8)" />
+          </TouchableOpacity>
+        )}
 
         <View style={{
           backgroundColor: Colors.surface,

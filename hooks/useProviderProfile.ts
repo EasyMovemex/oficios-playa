@@ -5,12 +5,16 @@ import { useAuthStore } from '@/stores/authStore';
 export type MyProviderProfile = {
   id: string;
   user_id: string;
+  business_name: string | null;
+  logo_url: string | null;
   bio: string | null;
   years_experience: number;
   verified: boolean;
   rating_avg: number;
   total_reviews: number;
   coverage_area: string;
+  schedule: string | null;
+  website: string | null;
   portfolio_urls: string[] | null;
   created_at: string;
   updated_at: string;

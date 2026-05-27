@@ -165,7 +165,27 @@ export default function RegisterScreen() {
             }
           </TouchableOpacity>
 
-          <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 24 }}>
+          {/* Legal notice */}
+          <View style={{ marginTop: 16, paddingHorizontal: 4, alignItems: 'center' }}>
+            <Text style={{ fontFamily: F.regular, fontSize: 12, color: Colors.textSecondary, textAlign: 'center', lineHeight: 18 }}>
+              Al registrarte aceptás nuestros
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 4, marginTop: 2 }}>
+              <TouchableOpacity onPress={() => router.push('/(auth)/terms')} activeOpacity={0.7}>
+                <Text style={{ fontFamily: F.medium, fontSize: 12, color: Colors.primary }}>
+                  Términos y Condiciones
+                </Text>
+              </TouchableOpacity>
+              <Text style={{ fontFamily: F.regular, fontSize: 12, color: Colors.textSecondary }}>y</Text>
+              <TouchableOpacity onPress={() => router.push('/(auth)/privacy')} activeOpacity={0.7}>
+                <Text style={{ fontFamily: F.medium, fontSize: 12, color: Colors.primary }}>
+                  Política de Privacidad
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
             <Text style={{ fontFamily: F.regular, fontSize: 14, color: Colors.textSecondary }}>
               ¿Ya tenés cuenta?{' '}
             </Text>
