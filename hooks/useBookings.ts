@@ -94,6 +94,22 @@ export function useBooking(id: string) {
   });
 }
 
+export function useMyReviewForBooking(bookingId: string) {
+  return useQuery<boolean>({
+    queryKey: ['review-exists', bookingId],
+    queryFn: async () => {
+      const userId = await getCurrentUserId();
+      const { count } = await supabase
+        .from('reviews')
+        .select('id', { count: 'exact', head: true })
+        .eq('booking_id', bookingId)
+        .eq('reviewer_id', userId);
+      return (count ?? 0) > 0;
+    },
+    enabled: !!bookingId,
+  });
+}
+
 export function useCreateReview() {
   const qc = useQueryClient();
   return useMutation({

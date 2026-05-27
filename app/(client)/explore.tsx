@@ -26,22 +26,36 @@ export default function Explore() {
     setSelectedSlug(initialCategory);
   }, [initialCategory]);
   const [searchText, setSearchText] = useState('');
+  const [sortBy, setSortBy] = useState<'rating' | 'experience' | 'newest'>('rating');
 
   const { data: providers, isLoading, refetch, isRefetching } = useProviders();
   const { data: categories } = useCategories();
 
   const filtered = useMemo(() => {
     if (!providers) return [];
-    return providers.filter((p) => {
+    const result = providers.filter((p) => {
       const matchesCategory =
         !selectedSlug ||
         p.provider_services.some((s) => s.service_categories.slug === selectedSlug);
       const q = searchText.trim().toLowerCase();
       const matchesSearch =
-        !q || p.profiles.full_name.toLowerCase().includes(q);
+        !q ||
+        p.profiles.full_name.toLowerCase().includes(q) ||
+        (p.business_name ?? '').toLowerCase().includes(q) ||
+        (p.bio ?? '').toLowerCase().includes(q) ||
+        p.provider_services.some((s) =>
+          s.service_categories.name.toLowerCase().includes(q),
+        );
       return matchesCategory && matchesSearch;
     });
-  }, [providers, selectedSlug, searchText]);
+
+    return [...result].sort((a, b) => {
+      if (sortBy === 'rating') return b.rating_avg - a.rating_avg;
+      if (sortBy === 'experience') return b.years_experience - a.years_experience;
+      // newest
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [providers, selectedSlug, searchText, sortBy]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }} edges={['top']}>
@@ -77,7 +91,7 @@ export default function Explore() {
           <TextInput
             value={searchText}
             onChangeText={setSearchText}
-            placeholder="Buscar por nombre..."
+            placeholder="Nombre, negocio, categoría..."
             placeholderTextColor={Colors.textSecondary}
             style={{
               flex: 1,
@@ -152,6 +166,42 @@ export default function Explore() {
           </TouchableOpacity>
         ))}
       </ScrollView>
+
+      {/* Sort chips */}
+      <View style={{
+        flexDirection: 'row',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        gap: 8,
+        backgroundColor: Colors.background,
+      }}>
+        {([
+          { key: 'rating', label: '⭐ Mejor calificación' },
+          { key: 'experience', label: '🏆 Más experiencia' },
+          { key: 'newest', label: '🆕 Más recientes' },
+        ] as const).map((opt) => (
+          <TouchableOpacity
+            key={opt.key}
+            onPress={() => setSortBy(opt.key)}
+            style={{
+              paddingHorizontal: 11,
+              paddingVertical: 5,
+              borderRadius: 999,
+              backgroundColor: sortBy === opt.key ? Colors.primary : Colors.surface,
+              borderWidth: 1,
+              borderColor: sortBy === opt.key ? Colors.primary : '#E2E8F0',
+            }}
+          >
+            <Text style={{
+              fontFamily: 'Poppins_500Medium',
+              fontSize: 12,
+              color: sortBy === opt.key ? 'white' : Colors.textSecondary,
+            }}>
+              {opt.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {/* Provider list */}
       {isLoading ? (

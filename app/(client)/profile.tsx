@@ -1,10 +1,14 @@
-import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
 import { Avatar } from '@/components/ui';
 import { useAuthStore } from '@/stores/authStore';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
+import { uploadToStorage } from '@/lib/uploadImage';
 import { Colors } from '@/constants/Colors';
 
 type MenuRowProps = {
@@ -44,10 +48,43 @@ function MenuRow({ icon, label, onPress, danger }: MenuRowProps) {
 
 export default function ClientProfile() {
   const router = useRouter();
-  const { profile, setActiveRole } = useAuthStore();
+  const { profile, setProfile, setActiveRole } = useAuthStore();
   const { signOut } = useAuth();
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   const isProvider = profile?.role.includes('provider') ?? false;
+
+  const handleAvatarPick = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso requerido', 'Necesitamos acceso a tu galería para cambiar la foto.');
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (result.canceled || !result.assets[0]) return;
+    if (!profile?.id) return;
+
+    setUploadingAvatar(true);
+    try {
+      const uri = result.assets[0].uri;
+      const path = `avatars/${profile.id}.jpg`;
+      const publicUrl = await uploadToStorage(uri, path);
+      await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+        .eq('id', profile.id);
+      setProfile({ ...profile, avatar_url: publicUrl });
+    } catch {
+      Alert.alert('Error', 'No se pudo subir la foto. Intentá de nuevo.');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const handleSwitchToProvider = () => {
     setActiveRole('provider');
@@ -74,11 +111,32 @@ export default function ClientProfile() {
           borderBottomWidth: 1,
           borderBottomColor: '#E2E8F0',
         }}>
-          <Avatar
-            uri={profile?.avatar_url}
-            name={profile?.full_name ?? 'U'}
-            size={72}
-          />
+          {/* Avatar tappable con ícono de cámara */}
+          <TouchableOpacity onPress={handleAvatarPick} disabled={uploadingAvatar} activeOpacity={0.8}>
+            <View>
+              <Avatar
+                uri={profile?.avatar_url}
+                name={profile?.full_name ?? 'U'}
+                size={72}
+              />
+              <View style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                backgroundColor: Colors.primary,
+                borderRadius: 999,
+                padding: 5,
+                borderWidth: 2,
+                borderColor: Colors.surface,
+              }}>
+                {uploadingAvatar
+                  ? <ActivityIndicator size={12} color="white" />
+                  : <Ionicons name="camera" size={12} color="white" />
+                }
+              </View>
+            </View>
+          </TouchableOpacity>
+
           <Text style={{
             fontFamily: 'Poppins_700Bold',
             fontSize: 20,
@@ -119,14 +177,14 @@ export default function ClientProfile() {
             onPress={() => router.push('/(client)/requests')}
           />
           <MenuRow
-            icon="pencil-outline"
-            label="Editar perfil"
-            onPress={() => Alert.alert('Editar perfil', 'Disponible próximamente.')}
+            icon="shield-checkmark-outline"
+            label="Términos y condiciones"
+            onPress={() => router.push('/(auth)/terms')}
           />
           <MenuRow
-            icon="notifications-outline"
-            label="Notificaciones"
-            onPress={() => Alert.alert('Notificaciones', 'Disponible próximamente.')}
+            icon="lock-closed-outline"
+            label="Política de privacidad"
+            onPress={() => router.push('/(auth)/privacy')}
           />
         </View>
 

@@ -1,4 +1,5 @@
 import { View, Text, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Avatar, Rating, Badge } from '@/components/ui';
 import { Colors } from '@/constants/Colors';
 import type { ProviderWithDetails } from '@/hooks/useProviders';
@@ -15,6 +16,12 @@ export function ProviderCard({ provider, onPress }: ProviderCardProps) {
     .map((s) => s.price_from)
     .filter((p): p is number => p !== null)
     .sort((a, b) => a - b)[0];
+
+  // "Perfil completo" when they have: photo + bio + at least 1 service
+  const isComplete =
+    !!(provider.logo_url ?? profile.avatar_url) &&
+    !!provider.bio &&
+    provider.provider_services.length > 0;
 
   return (
     <TouchableOpacity
@@ -55,6 +62,14 @@ export function ProviderCard({ provider, onPress }: ProviderCardProps) {
               <Text style={{ fontFamily: 'Poppins_400Regular', fontSize: 12, color: Colors.textSecondary }} numberOfLines={1}>
                 {profile.full_name}
               </Text>
+            )}
+            {isComplete && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 2 }}>
+                <Ionicons name="checkmark-circle" size={12} color={Colors.accent} />
+                <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 11, color: Colors.accent }}>
+                  Perfil completo
+                </Text>
+              </View>
             )}
           </View>
           {provider.total_reviews > 0 && (

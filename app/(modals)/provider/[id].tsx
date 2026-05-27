@@ -1,4 +1,4 @@
-import { ScrollView, View, Text, TouchableOpacity, Image } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, Image, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -34,6 +34,21 @@ export default function ProviderDetail() {
   const { data: provider, isLoading } = useProvider(id);
   const { data: reviews = [] } = useProviderReviews(provider?.user_id ?? '');
 
+  const handleShare = async () => {
+    if (!provider) return;
+    const name = provider.business_name ?? provider.profiles.full_name;
+    const cats = provider.provider_services
+      .map((s) => s.service_categories.name)
+      .join(', ');
+    const phone = provider.profiles.phone
+      ? `\nWhatsApp: ${provider.profiles.phone}`
+      : '';
+    await Share.share({
+      message: `Te recomiendo a ${name} en OficiosPlaya 🛠️\nServicios: ${cats}${phone}\n\nDescargá la app: https://oficiosplaya.com`,
+      title: name,
+    });
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: Colors.background }} edges={['top']}>
       {/* Close button */}
@@ -51,6 +66,24 @@ export default function ProviderDetail() {
       >
         <Ionicons name="close" size={20} color="white" />
       </TouchableOpacity>
+
+      {/* Share button */}
+      {provider && (
+        <TouchableOpacity
+          onPress={handleShare}
+          style={{
+            position: 'absolute',
+            top: 52,
+            right: 16,
+            zIndex: 10,
+            backgroundColor: 'rgba(0,0,0,0.15)',
+            borderRadius: 999,
+            padding: 6,
+          }}
+        >
+          <Ionicons name="share-outline" size={20} color="white" />
+        </TouchableOpacity>
+      )}
 
       {isLoading ? (
         <View style={{ paddingHorizontal: 16, paddingTop: 80, gap: 12 }}>

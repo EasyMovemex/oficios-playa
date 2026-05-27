@@ -9,7 +9,7 @@ import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar, Badge, SkeletonCard } from '@/components/ui';
 import { WhatsAppButton } from '@/components/shared/WhatsAppButton';
-import { useBooking, useCreateReview } from '@/hooks/useBookings';
+import { useBooking, useCreateReview, useMyReviewForBooking } from '@/hooks/useBookings';
 import { useAuthStore } from '@/stores/authStore';
 import { supabase } from '@/lib/supabase';
 import { Colors } from '@/constants/Colors';
@@ -44,6 +44,7 @@ export default function BookingDetail() {
   const { profile } = useAuthStore();
 
   const { data: booking, isLoading, refetch } = useBooking(id);
+  const { data: alreadyReviewed = false } = useMyReviewForBooking(id);
   const createReview = useCreateReview();
 
   const [completing, setCompleting] = useState(false);
@@ -53,6 +54,8 @@ export default function BookingDetail() {
 
   const isClient = booking?.client_id === profile?.id;
   const canComplete = isClient && booking && ['confirmed', 'in_progress'].includes(booking.status);
+  // Show review form if: just completed OR already completed but not yet reviewed
+  const canReview = isClient && booking?.status === 'completed' && !alreadyReviewed;
   const statusConfig = booking ? (STATUS_CONFIG[booking.status] ?? { label: booking.status, variant: 'neutral' as const }) : null;
 
   const handleComplete = async () => {
@@ -219,8 +222,8 @@ export default function BookingDetail() {
             </View>
           )}
 
-          {/* Review form */}
-          {showReview && (
+          {/* Review form — appears after completing OR on re-visit if not yet reviewed */}
+          {(showReview || canReview) && (
             <View style={{
               marginHorizontal: 16, marginBottom: 32, backgroundColor: Colors.surface,
               borderRadius: 16, padding: 20, borderWidth: 1.5, borderColor: Colors.accent,
