@@ -124,9 +124,11 @@ export default function ProviderProfile() {
                 <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 12, color: Colors.accent, marginTop: 2 }}>
                   ✓ Prestador verificado
                 </Text>
-              ) : (
-                <Badge variant="warning" size="sm">Verificación pendiente</Badge>
-              )}
+              ) : !!(providerProfile.logo_url) && !!providerProfile.bio && providerProfile.provider_services?.length > 0 ? (
+                <Text style={{ fontFamily: 'Poppins_500Medium', fontSize: 12, color: Colors.accent, marginTop: 2 }}>
+                  ✓ Perfil completo
+                </Text>
+              ) : null}
 
               {providerProfile.total_reviews > 0 && (
                 <View style={{ marginTop: 10 }}>
